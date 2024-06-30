@@ -23,6 +23,8 @@ import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { findByCodeLazy, findByPropsLazy } from "@webpack";
 
+import dict from "./dict_set.json";
+
 type AnonUpload = Upload & { anonymise?: boolean; };
 
 const ActionBarIcon = findByCodeLazy(".actionBarIcon)");
@@ -30,6 +32,7 @@ const UploadDraft = findByPropsLazy("popFirstFile", "update");
 
 const enum Methods {
     Random,
+    Words,
     Consistent,
     Timestamp,
 }
@@ -47,6 +50,7 @@ const settings = definePluginSettings({
         type: OptionType.SELECT,
         options: [
             { label: "Random Characters", value: Methods.Random, default: true },
+            { label: "Random Words", value: Methods.Words },
             { label: "Consistent", value: Methods.Consistent },
             { label: "Timestamp", value: Methods.Timestamp },
         ],
@@ -128,6 +132,26 @@ export default definePlugin({
                     { length: settings.store.randomisedLength },
                     () => chars[Math.floor(Math.random() * chars.length)]
                 ).join("") + ext;
+            case Methods.Words:
+                let generatedString = Array.from(
+                    { length: settings.store.randomisedLength },
+                    () => dict[Math.floor(Math.random() * dict.length)]
+                ).join("_") + ext;
+
+                generatedString = generatedString.length > 400 ? generatedString.slice(0, 397) + ext : generatedString;
+
+                const randomString = generatedString.split("").map(char => {
+                    if (char === "_") {
+                        const random = Math.random();
+                        if (random < 0.2) return "-";
+                        else if (random < 0.4) return char;
+                        else if (random < 0.7) return ".";
+                        else if (random < 1.0) return "";
+                        else return char;
+                    }
+                    return char;
+                }).join("");
+                return randomString;
             case Methods.Consistent:
                 return settings.store.consistent + ext;
             case Methods.Timestamp:
