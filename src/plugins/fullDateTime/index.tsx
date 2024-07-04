@@ -7,6 +7,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
+import moment from "moment";
 
 const enum Methods {
     twelveHour,
@@ -34,23 +35,20 @@ export default definePlugin({
         {
             find: ".Messages.MESSAGE_EDITED_TIMESTAMP_A11Y_LABEL",
             replacement: [{
-                match: /(\(d,\s*"LT")/,
-                replace: (_, orig) => `(d, "${format()}"`
+                match: /(?<=\i=\i\?)\(0,\i\.\i\)\((\i),"LT"\):\(0,\i\.\i\)\(\i\)/,
+                replace: "$self.format($1):$self.format($1)"
             },
-            {
-                match: /(\(d,\s*"LLLL")/,
-                replace: (_, orig) => `(d, "YYYY-MM-DD ${format()}"`,
-            }]
+            ]
         },
     ],
-},
-);
 
-function format() {
-    switch (settings.store.method) {
-        case Methods.twelveHour:
-            return "h:mm:ss A";
-        case Methods.twentyFourHour:
-            return "HH:mm:ss";
+    format(date: Date) {
+        const t = moment(date);
+        switch (settings.store.method) {
+            case Methods.twelveHour:
+                return t.format("h:mm:ss A");
+            case Methods.twentyFourHour:
+                return t.format("HH:MM:SS");
+        }
     }
-}
+});
