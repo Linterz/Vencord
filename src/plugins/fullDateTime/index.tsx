@@ -42,13 +42,13 @@ export default definePlugin({
         },
     ],
 
-    format(date: Date) {
+    format(date: Date, key: string) {
         const t = moment(date);
         switch (settings.store.method) {
             case Methods.twelveHour:
                 return t.format("h:mm:ss A");
             case Methods.twentyFourHour:
-                return t.format("HH:MM:SS");
+                return t.format("HH:mm:ss");
         }
     }
 });
